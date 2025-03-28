@@ -1,0 +1,8 @@
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - /var/lib/mpbot/db:/usr/app/src/database
