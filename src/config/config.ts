@@ -1,6 +1,6 @@
 export const BOT_TOKEN = process.env.BOT_TOKEN || "";
 export const ADMINS = process.env.ADMINS?.split(",") || [];
-export const CHANNEL_ID = process.env.CHANELL_ID || "";
+export const CHANNEL_ID = process.env.CHANNEL_ID || "";
 export const START_MESSAGE = process.env.START_MESSAGE || "";
 export const SCHEDULE_START = process.env.SCHEDULE_START || "";
 export const SCHEDULE_END = process.env.SCHEDULE_END || "";

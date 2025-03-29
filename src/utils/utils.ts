@@ -6,9 +6,9 @@ const MIDNIGHT = 1440;
 
 class DateUtils {
   private isScheduleExists: boolean;
-  private isScheduleStartLowerThanEnd: boolean;
-  private scheduleStart;
-  private scheduleEnd;
+  private isScheduleStartLowerThanEnd: boolean = true;
+  private scheduleStart: number = 0;
+  private scheduleEnd: number = 0;
 
   constructor() {
     if (SCHEDULE_START === "" || SCHEDULE_END === "") {
@@ -17,29 +17,38 @@ class DateUtils {
       this.isScheduleExists = true;
     }
 
-    this.scheduleStart = DateUtils.stringToMinutes(SCHEDULE_START);
-    this.scheduleEnd = DateUtils.stringToMinutes(SCHEDULE_END);
+    this.initSchedule();
+  }
+
+  private async initSchedule() {
+    this.scheduleStart = await DateUtils.stringToMinutes(SCHEDULE_START);
+    this.scheduleEnd = await DateUtils.stringToMinutes(SCHEDULE_END);
 
     this.isScheduleStartLowerThanEnd = this.scheduleStart < this.scheduleEnd;
   }
 
-  async isDateInSchedule(date: any): Promise<boolean> {
+  async isDateInSchedule(date: string): Promise<boolean> {
     if (!this.isScheduleExists) {
       return true;
     }
 
-    date = await DateUtils.stringToMinutes(date);
+    date = await DateUtils.extractHoursAndMinutes(date);
+    const dateMinutes = await DateUtils.stringToMinutes(date);
 
     if (this.isScheduleStartLowerThanEnd) {
-      return date >= this.scheduleStart && date <= this.scheduleEnd;
+      return dateMinutes >= this.scheduleStart && dateMinutes <= this.scheduleEnd;
     } else {
-      return date >= this.scheduleStart || date <= this.scheduleEnd;
+      return dateMinutes >= this.scheduleStart || dateMinutes <= this.scheduleEnd;
     }  
   }
 
   static async stringToMinutes(date: string): Promise<number> {
     const [hours, minutes] = date.split(":").map(Number);
     return hours * 60 + minutes;
+  }
+
+  static async extractHoursAndMinutes(date: string): Promise<string> {
+    return date.split(" ")[1];
   }
 
   //нынешняя дата

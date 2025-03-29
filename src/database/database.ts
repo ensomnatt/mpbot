@@ -10,6 +10,7 @@ try {
     CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       message_id INTEGER NOT NULL,
+      chat_id INTEGER NOT NULL,
       time TEXT NOT NULL,
       sent INTEGER NOT NULL
     )
