@@ -102,4 +102,29 @@ export class Model {
       console.error(`ошибка при попытке изменить сообщение в базе данных: ${error}`);
     }
   }
+
+  //получение всех сообщений
+  async getAllMessages(): Promise<Message[]> {
+    try {
+      const messagesRows = db.prepare("SELECT * FROM messages;").all() as Row[];
+      const messages: Message[] = [];
+
+      for (const row of messagesRows) {
+        const msg: Message = {
+          messageID: row.message_id,
+          chatID: row.chat_id,
+          time: row.time,
+          sent: row.sent
+        }
+
+        messages.push(msg);
+      }
+
+      console.log("получены сообщения из бд");
+      return messages;
+    } catch (error) {
+      console.error(`ошибка при получении всех сообщений из бд: ${error}`);
+      return [];
+    }
+  }
 }

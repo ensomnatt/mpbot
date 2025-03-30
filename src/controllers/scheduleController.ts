@@ -80,11 +80,13 @@ class ScheduleController {
       ) {
         console.log("с момента отправки последнего сообщения прошло достаточно времени");
         await this.model.addMessageToDB(msgNow);
+        await View.sendMessageTime(ctx, msgNow.time);
         await View.sendMessageToChannel(ctx, msgID, chatID, msgNow.time);
         //если разница меньше интервала либо 
         //нынешнее время меньше времени публикации последнего сообщения
       } else {
         await this.model.addMessageToDB(msgLater);
+        await View.sendMessageTime(ctx, msgLater.time);
         console.log(`сообщение было отправленно в отложенные. id: ${msgLater.messageID}, time: ${msgLater.time}`);
       }
     }
