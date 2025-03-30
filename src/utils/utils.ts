@@ -42,6 +42,17 @@ class DateUtils {
     }  
   }
 
+  static async maxDate(datesStr: string[]): Promise<string> {
+    const dates = [];
+    for (const dateStr of datesStr) {
+      const date = await this.stringToDate(dateStr);
+      dates.push(date);
+    }
+    const maxDate = DateTime.max(...dates);
+
+    return this.dateToString(maxDate);
+  }
+
   static async stringToMinutes(date: string): Promise<number> {
     const [hours, minutes] = date.split(":").map(Number);
     return hours * 60 + minutes;

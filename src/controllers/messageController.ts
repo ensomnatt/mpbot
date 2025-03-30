@@ -2,6 +2,7 @@ import { Context } from "telegraf";
 import View from "../view/view";
 import { Model } from "../model/model";
 import { CallbackQuery } from "telegraf/typings/core/types/typegram";
+import { BotContext } from "../context/context";
 
 class MessageController {  
   private model = new Model();
@@ -22,6 +23,44 @@ class MessageController {
   async clear(ctx: Context) {
     console.log(`пользователь @${ctx.from?.username} отправил команду /clear`);
     await this.model.deleteAllMessages();
+    await View.sendClearMessage(ctx);
+  }
+
+  // кнопка удалить
+  async delete(ctx: Context) {
+    console.log(`пользователь @${ctx.from?.username} нажал на кнопку удалить`);
+    const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
+    const msgID = parseInt(callbackQuery.data.split("_")[1], 10);
+
+    this.model.deleteMessage(msgID);
+    await ctx.answerCbQuery();
+  }
+
+  //кнопка изменить время
+  async changeTimeButton(ctx: BotContext) {
+    console.log(`пользователь @${ctx.from?.username} нажал на кнопку изменить время`);
+
+    if (!ctx.session) {
+      console.log("сессия не объявлена");
+    }
+
+    const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
+    const msgID = parseInt(callbackQuery.data.split("_")[1], 10);
+    
+    await View.timeMessage(ctx);
+    ctx.session.changeTimeMsgID = msgID;
+    ctx.session.awaitingTime = true;
+  }
+
+  //смена времени сообщения
+  async changeTime(ctx: BotContext) {
+    console.log("changeTime");
+    let time: string = "";
+    if (ctx.message && "text" in ctx.message) time = ctx.message!.text;
+
+    await this.model.changeMessageTime(ctx.session.changeTimeMsgID, time);
+    ctx.session.awaitingTime = false;
+    await View.sendMessageAboutPublicationTime(ctx, ctx.session.changeTimeMsgID)
   }
 
   //смена страниц

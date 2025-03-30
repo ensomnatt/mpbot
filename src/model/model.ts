@@ -1,4 +1,5 @@
 import db from "../database/database";
+import DateUtils from "../utils/utils";
 
 //интерфейс сообщения
 export interface Message {
@@ -51,17 +52,31 @@ export class Model {
 
   //получение последней записи в бд
   async getLastMessage(): Promise<Message> {
-    const row = db.prepare("SELECT * FROM messages ORDER BY id DESC LIMIT 1").get() as Row; 
+    const messages = await this.getAllMessages();
+    const times = [];
 
-    const msg: Message = {
-      messageID: row.message_id,
-      chatID: row.chat_id,
-      time: row.time,
-      sent: row.sent
+    for (const msg of messages) {
+      times.push(msg.time);
+    }
+
+    const maxTime = await DateUtils.maxDate(times);
+    let lastMsg: Message = {
+      messageID: 0,
+      chatID: 0,
+      time: "",
+      sent: 0
+    };
+
+    for (const msg of messages) {
+      if (msg.time === maxTime) {
+        lastMsg = msg; 
+      } else {
+        continue;
+      }
     }
 
     console.log("получена последняя запись в бд")
-    return msg;
+    return lastMsg;
   }
 
   //получение неотправленных сообщений
@@ -121,15 +136,49 @@ export class Model {
       }
 
       console.log("получены сообщения из бд");
-      return messages;
+      return await this.sortMessages(messages);
     } catch (error) {
       console.error(`ошибка при получении всех сообщений из бд: ${error}`);
       return [];
     }
   }
 
+  //удаление всех сообщений
   async deleteAllMessages() {
     db.prepare("DELETE FROM messages").run();
     console.log("удалены все сообщения из бд");
+  }
+
+  //удаление сообщения
+  async deleteMessage(msgID: number) {
+    db.prepare("DELETE FROM messages WHERE message_id = ?").run(msgID);
+    console.log("удалено сообщение из бд");
+  }
+
+  //смена времени сообщения
+  async changeMessageTime(msgID: number, time: string) {
+    db.prepare("UPDATE messages SET time = ? WHERE message_id = ?").run(time, msgID);
+    console.log(`время публикации сообщения ${msgID} было изменено на ${time}`);
+  }
+
+  async sortMessages(messages: Message[]): Promise<Message[]> {
+    let n = messages.length;
+    for (let i = 0; i < n; i++) {
+      let swapped = false;
+      for (let j = 0; j < n - i - 1; j++) {
+        const date1 = await DateUtils.stringToDate(messages[j].time);
+        const date2 = await DateUtils.stringToDate(messages[j + 1].time);
+        
+        if (date1 > date2) {
+          [messages[j], messages[j + 1]] = [messages[j + 1], messages[j]];
+          swapped = true;
+        }
+      }
+      if (!swapped) {
+        break;
+      }
+    }
+
+    return messages;
   }
 }

@@ -15,6 +15,36 @@ class View {
     await ctx.sendMessage(START_MESSAGE);
   }  
 
+  //отправка сообщения с просьбой ввести время 
+  static async timeMessage(ctx: Context) {
+    const keyboard = Markup.inlineKeyboard(
+      [
+        Markup.button.callback("отменить", `cancel_changeTime`)
+      ]
+    );
+
+    ctx.sendMessage("введите новое время публикации в формате yyyy-MM-dd HH:mm\n\n к примеру: 2025-03-30 15:30");
+  }
+
+  //отправка сообщения с оповещением о том, что очередь была очищена
+  static async sendClearMessage(ctx: Context) {
+    await ctx.sendMessage("сообщения были очищены");
+  }
+
+  //отправка сообщения с уведомлением о том, что пост был отправлен прямо сейчас
+  static async sendMessageAboutPublicationNow(ctx: Context) {
+    await ctx.reply("сообщение было отправлено сейчас, потому что в очереди нет других сообщений");
+  }
+
+  //отправка сообщения с уведомлением о том, что время публикации было изменено
+  static async sendMessageAboutPublicationTime(ctx: Context, msgID: number) {
+    await ctx.reply("время публикации было изменено", {
+      reply_parameters: {
+        message_id: msgID
+      }
+    });
+  }
+
   //отправка сообщения в канал
   static async sendMessageToChannel(
     ctx: Context, 
@@ -31,8 +61,18 @@ class View {
   }
 
   //отправка времени сообщения
-  static async sendMessageTime(ctx: Context, time: string) {
-    await ctx.sendMessage(time);
+  static async sendMessageTime(ctx: Context, time: string, msgID: number) {
+    const keyboard = [
+      [
+        Markup.button.callback("удалить", `delete_${msgID}`)
+      ],
+
+      [
+        Markup.button.callback("изменить время", `change_${msgID}`)
+      ]
+    ];
+
+    await ctx.sendMessage(time, Markup.inlineKeyboard(keyboard));
   }
 
   //получение страницы
@@ -97,8 +137,12 @@ class View {
 
   //отправка списка
   static async sendList(ctx: Context, messages: Message[]) {
-    const { text, keyboard } = await View.getPage(messages, 0); 
-    await ctx.sendMessage(text, keyboard);
+    if (messages.length === 0) {
+      await ctx.sendMessage("в очереди нет сообщений");
+    } else {
+      const { text, keyboard } = await View.getPage(messages, 0); 
+      await ctx.sendMessage(text, keyboard);
+    }
   }
 }
 

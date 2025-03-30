@@ -42,11 +42,13 @@ class ScheduleController {
         msgClone.sent = 0;
         
         await this.model.addMessageToDB(msgClone);
+        await View.sendMessageTime(ctx, msgClone.time, msgClone.messageID);
         //если в расписании
       } else {
         console.log("сообщение в расписании");
         await this.model.addMessageToDB(msgNow);
         await View.sendMessageToChannel(ctx, msgNow.messageID, chatID, msgNow.time);
+        await View.sendMessageAboutPublicationNow(ctx);
       }
       //если есть сообщения
     } else {
@@ -80,13 +82,13 @@ class ScheduleController {
       ) {
         console.log("с момента отправки последнего сообщения прошло достаточно времени");
         await this.model.addMessageToDB(msgNow);
-        await View.sendMessageTime(ctx, msgNow.time);
+        await View.sendMessageTime(ctx, msgNow.time, msgNow.messageID);
         await View.sendMessageToChannel(ctx, msgID, chatID, msgNow.time);
         //если разница меньше интервала либо 
         //нынешнее время меньше времени публикации последнего сообщения
       } else {
         await this.model.addMessageToDB(msgLater);
-        await View.sendMessageTime(ctx, msgLater.time);
+        await View.sendMessageTime(ctx, msgLater.time, msgLater.messageID);
         console.log(`сообщение было отправленно в отложенные. id: ${msgLater.messageID}, time: ${msgLater.time}`);
       }
     }
