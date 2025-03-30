@@ -13,9 +13,15 @@ class MessageController {
 
   // /list
   async list(ctx: Context) {
-    console.log(`пользователь @${ctx.from?.username} отправил команду /list`)
+    console.log(`пользователь @${ctx.from?.username} отправил команду /list`);
     const messages = await this.model.getAllMessages();
     await View.sendList(ctx, messages);
+  }
+
+  // /clear
+  async clear(ctx: Context) {
+    console.log(`пользователь @${ctx.from?.username} отправил команду /clear`);
+    await this.model.deleteAllMessages();
   }
 
   //смена страниц

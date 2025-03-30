@@ -127,4 +127,9 @@ export class Model {
       return [];
     }
   }
+
+  async deleteAllMessages() {
+    db.prepare("DELETE FROM messages").run();
+    console.log("удалены все сообщения из бд");
+  }
 }
