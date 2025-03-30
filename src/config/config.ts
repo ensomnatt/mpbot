@@ -1,5 +1,4 @@
 export const BOT_TOKEN = process.env.BOT_TOKEN || "";
-export const BOT_USERNAME = process.env.BOT_USERNAME || "";
 export const ADMINS = process.env.ADMINS?.split(",") || [];
 export const CHANNEL_ID = process.env.CHANNEL_ID || "";
 export const START_MESSAGE = process.env.START_MESSAGE || "";

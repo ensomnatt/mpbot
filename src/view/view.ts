@@ -1,5 +1,5 @@
 import { Context, Markup } from "telegraf";
-import { START_MESSAGE, CHANNEL_ID, BOT_USERNAME } from "../config/config";
+import { START_MESSAGE, CHANNEL_ID } from "../config/config";
 import { Message } from "../model/model";
 
 const pageSize = 20;
