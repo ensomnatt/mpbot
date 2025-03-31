@@ -162,23 +162,6 @@ export class Model {
   }
 
   async sortMessages(messages: Message[]): Promise<Message[]> {
-    let n = messages.length;
-    for (let i = 0; i < n; i++) {
-      let swapped = false;
-      for (let j = 0; j < n - i - 1; j++) {
-        const date1 = await DateUtils.stringToDate(messages[j].time);
-        const date2 = await DateUtils.stringToDate(messages[j + 1].time);
-        
-        if (date1 > date2) {
-          [messages[j], messages[j + 1]] = [messages[j + 1], messages[j]];
-          swapped = true;
-        }
-      }
-      if (!swapped) {
-        break;
-      }
-    }
-
-    return messages;
+    return messages.sort((a, b) => DateUtils.stringToUnix(a.time) - DateUtils.stringToUnix(b.time));
   }
 }

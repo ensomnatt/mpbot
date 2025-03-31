@@ -53,11 +53,25 @@ class DateUtils {
     return this.dateToString(maxDate);
   }
 
+  //строки в минуты
   static async stringToMinutes(date: string): Promise<number> {
     const [hours, minutes] = date.split(":").map(Number);
     return hours * 60 + minutes;
   }
 
+  //строки в юникс тайм
+  static stringToUnix(str: string): number {
+    const date = DateTime.fromFormat(str, FORMAT, { zone: TIME_ZONE });
+    return date.toSeconds();
+  }
+
+  //юникс тайм в строки
+  static async unixToString(unix: number): Promise<string> {
+    const date = DateTime.fromSeconds(unix);
+    return await this.dateToString(date);
+  }
+
+  //получение часов и минут
   static async extractHoursAndMinutes(date: string): Promise<string> {
     return date.split(" ")[1];
   }
@@ -87,14 +101,28 @@ class DateUtils {
   //метод для установки времени на начало расписания
   async setDateToScheduleStart(dateStr: string): Promise<string> {
     let date = await DateUtils.stringToDate(dateStr);
-    const hours = Math.floor(await this.scheduleStart / 60);
-    const minutes = await this.scheduleStart % 60; 
+    
+    const [ dateHours, dateMinutes ] = await DateUtils.extractHoursAndMinutes(dateStr);
+    dateStr = `${dateHours}:${dateMinutes}`;
+    const dateNowMinutes = await DateUtils.stringToMinutes(dateStr);
 
-    if (await this.scheduleEnd < MIDNIGHT) {
+    const hours = Math.floor(this.scheduleStart / 60);
+    const minutes = this.scheduleStart % 60; 
+
+    //если дата сообщения больше конца расписания, а расписание в формате 20:00-22:00
+    if (dateNowMinutes > this.scheduleEnd && this.isScheduleStartLowerThanEnd) {
       return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }).plus({ day: 1 }));
-    } else {
+      //если дата сообщения больше конца расписания, а расписание в формате 20:00-7:00
+    } else if (dateNowMinutes > this.scheduleEnd){
       return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }));
     }
+
+    //если дата сообщения меньше начала расписания
+    if (dateNowMinutes < this.scheduleStart && this.isScheduleStartLowerThanEnd) {
+      return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }));
+    } 
+
+    return "";
   }
 }
 
