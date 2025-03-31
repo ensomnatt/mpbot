@@ -26,6 +26,11 @@ class MessageController {
     await View.sendClearMessage(ctx);
   }
 
+  // /help
+  async help(ctx: Context) {
+    await View.helpMessage(ctx);
+  }
+
   // кнопка удалить
   async delete(ctx: Context) {
     console.log(`пользователь @${ctx.from?.username} нажал на кнопку удалить`);
@@ -34,6 +39,7 @@ class MessageController {
 
     this.model.deleteMessage(msgID);
     await ctx.answerCbQuery();
+    await View.sendDeleteMessage(ctx, msgID);
   }
 
   //кнопка изменить время

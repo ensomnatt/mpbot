@@ -12,8 +12,18 @@ interface editedMessage extends Message {
 class View {
   //отправка стартового сообщения
   static async startMessage(ctx: Context) {
-    await ctx.sendMessage(START_MESSAGE);
+    await ctx.sendMessage(
+      START_MESSAGE,
+      Markup.keyboard([
+        ["/list", "/clear", "/help"]
+      ]).resize()
+    );
   }  
+
+  //руководство по использованию бота
+  static async helpMessage(ctx: Context) {
+    //ВРЕМЕННО ПУСТО
+  }
 
   //отправка сообщения с просьбой ввести время 
   static async timeMessage(ctx: Context) {
@@ -39,6 +49,15 @@ class View {
   //отправка сообщения с уведомлением о том, что время публикации было изменено
   static async sendMessageAboutPublicationTime(ctx: Context, msgID: number) {
     await ctx.reply("время публикации было изменено", {
+      reply_parameters: {
+        message_id: msgID
+      }
+    });
+  }
+
+  //отправка сообщения с уведомлением о том, что сообщение удалено
+  static async sendDeleteMessage(ctx: Context, msgID: number) {
+    await ctx.reply("сообщение было удалено", {
       reply_parameters: {
         message_id: msgID
       }
