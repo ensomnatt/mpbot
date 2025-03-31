@@ -2,7 +2,6 @@ import { DateTime } from "luxon";
 import { TIME_ZONE, SCHEDULE_START, SCHEDULE_END } from "../config/config";
 
 const FORMAT = "yyyy-MM-dd HH:mm";  
-const MIDNIGHT = 1440;
 
 class DateUtils {
   private isScheduleExists: boolean;
@@ -40,6 +39,11 @@ class DateUtils {
     } else {
       return dateMinutes >= this.scheduleStart || dateMinutes <= this.scheduleEnd;
     }  
+  }
+
+  static async isDateValid(dateStr: string): Promise<boolean> {
+    const date = DateTime.fromFormat(dateStr, FORMAT);
+    return date.isValid;
   }
 
   static async maxDate(datesStr: string[]): Promise<string> {
@@ -102,19 +106,20 @@ class DateUtils {
   async setDateToScheduleStart(dateStr: string): Promise<string> {
     let date = await DateUtils.stringToDate(dateStr);
     
-    const [ dateHours, dateMinutes ] = await DateUtils.extractHoursAndMinutes(dateStr);
-    dateStr = `${dateHours}:${dateMinutes}`;
-    const dateNowMinutes = await DateUtils.stringToMinutes(dateStr);
+    const dateNow = await DateUtils.extractHoursAndMinutes(dateStr);
+    const dateNowMinutes = await DateUtils.stringToMinutes(dateNow);
 
     const hours = Math.floor(this.scheduleStart / 60);
     const minutes = this.scheduleStart % 60; 
 
-    //если дата сообщения больше конца расписания, а расписание в формате 20:00-22:00
-    if (dateNowMinutes > this.scheduleEnd && this.isScheduleStartLowerThanEnd) {
-      return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }).plus({ day: 1 }));
-      //если дата сообщения больше конца расписания, а расписание в формате 20:00-7:00
-    } else if (dateNowMinutes > this.scheduleEnd){
-      return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }));
+    if (dateNowMinutes > this.scheduleEnd) {
+      //если дата сообщения больше конца расписания, а расписание в формате 20:00-22:00
+      if (this.isScheduleStartLowerThanEnd) {
+        return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }).plus({ day: 1 }));
+        //если дата сообщения больше конца расписания, а расписание в формате 20:00-7:00
+      } else {
+        return await DateUtils.dateToString(date.set({ hour: hours, minute: minutes }));
+      }
     }
 
     //если дата сообщения меньше начала расписания

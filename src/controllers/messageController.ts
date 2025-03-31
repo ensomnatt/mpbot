@@ -3,6 +3,7 @@ import View from "../view/view";
 import { Model } from "../model/model";
 import { CallbackQuery } from "telegraf/typings/core/types/typegram";
 import { BotContext } from "../context/context";
+import DateUtils from "../utils/utils";
 
 class MessageController {  
   private model = new Model();
@@ -58,15 +59,29 @@ class MessageController {
     ctx.session.awaitingTime = true;
   }
 
+  //кнопка отмены изменения времени сообщения
+  async cancelChangeTime(ctx: BotContext) {
+    const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
+    const changeTimeMessageID = callbackQuery.message?.message_id;
+
+    ctx.session.awaitingTime = false;
+    await ctx.deleteMessage(changeTimeMessageID);
+    await ctx.answerCbQuery();
+  }
+
   //смена времени сообщения
   async changeTime(ctx: BotContext) {
-    console.log("changeTime");
     let time: string = "";
     if (ctx.message && "text" in ctx.message) time = ctx.message!.text;
-
-    await this.model.changeMessageTime(ctx.session.changeTimeMsgID, time);
-    ctx.session.awaitingTime = false;
-    await View.sendMessageAboutPublicationTime(ctx, ctx.session.changeTimeMsgID)
+    
+    //проверка на валидность даты
+    if (!await DateUtils.isDateValid(time)) {
+      await View.sendChangeTimeErrorMessage(ctx);
+    } else {
+      await this.model.changeMessageTime(ctx.session.changeTimeMsgID, time);
+      ctx.session.awaitingTime = false;
+      await View.sendMessageAboutPublicationTime(ctx, ctx.session.changeTimeMsgID)
+    }
   }
 
   //смена страниц

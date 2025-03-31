@@ -1,6 +1,7 @@
 import { Context, Markup } from "telegraf";
 import { START_MESSAGE, CHANNEL_ID } from "../config/config";
 import { Message } from "../model/model";
+import { inlineKeyboard } from "telegraf/typings/markup";
 
 const pageSize = 20;
 
@@ -22,18 +23,35 @@ class View {
 
   //руководство по использованию бота
   static async helpMessage(ctx: Context) {
-    //ВРЕМЕННО ПУСТО
+    await ctx.sendMessage(
+      "как пользоваться ботом:\n" +
+      "вы пересылаете посты боту. все, он сам выставляет время и публикует сообщения\n\n" +
+      "инструменты:\n" +
+      "/list - выводит все запланированные посты, при нажатии на кнопку, номер которой " +
+      "соответствует номеру сообщения бот присылает ответ на нужный вам пост\n" +
+      "/clear - удаляет все запланированные посты, будьте осторожны\n" +
+      "/help - вывести это сообщение\n" +
+      "/start - приветственное сообщение, вызывайте на случай, если пропала клавиатура с кнопками\n" +
+      "кнопка удалить - удаляет нужный пост из очереди\n" +
+      "кнопка изменить время - переносит нужный пост на заданную дату."
+    )
   }
 
   //отправка сообщения с просьбой ввести время 
   static async timeMessage(ctx: Context) {
     const keyboard = Markup.inlineKeyboard(
       [
-        Markup.button.callback("отменить", `cancel_changeTime`)
+        Markup.button.callback("отменить", `cancelChangeTime`)
       ]
     );
 
-    ctx.sendMessage("введите новое время публикации в формате yyyy-MM-dd HH:mm\n\n к примеру: 2025-03-30 15:30");
+    await ctx.sendMessage("введите новое время публикации в формате yyyy-MM-dd HH:mm\n\nк примеру: 2025-03-30 15:30", keyboard);
+  }
+
+  //отправка сообщения с оповещением о том, что заданное время не подходит под формат
+  static async sendChangeTimeErrorMessage(ctx: Context) {
+    await ctx.sendMessage("заданное время не подходит под формат! попробуйте еще раз");
+    await this.timeMessage(ctx);
   }
 
   //отправка сообщения с оповещением о том, что очередь была очищена
