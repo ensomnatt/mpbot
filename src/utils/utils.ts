@@ -43,7 +43,7 @@ class DateUtils {
 
   static async isDateValid(dateStr: string): Promise<boolean> {
     const date = DateTime.fromFormat(dateStr, FORMAT);
-    return date.isValid;
+    return date.isValid && date > await this.stringToDate(await this.getCurrentDate());
   }
 
   static async maxDate(datesStr: string[]): Promise<string> {
