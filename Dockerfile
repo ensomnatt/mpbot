@@ -1,12 +1,14 @@
 FROM node:slim
 
-WORKDIR /usr/app
+RUN apt-get update && apt-get install -y python3 python3-pip build-essential
+
+WORKDIR /app
 
 COPY package*.json ./
 
 RUN npm install
 
-COPY . ./
+COPY . .
 
 RUN npm run build
 
