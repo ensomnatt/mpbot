@@ -4,25 +4,26 @@ import { Model } from "../model/model";
 import { CallbackQuery } from "telegraf/typings/core/types/typegram";
 import { BotContext } from "../context/context";
 import DateUtils from "../utils/utils";
+import logger from "../logs/logs";
 
 class MessageController {  
   private model = new Model();
   // /start
   async start(ctx: Context) {
-    console.log(`пользователь @${ctx.from?.username} запустил бота`);
+    logger.info(`пользователь @${ctx.from?.username} запустил бота`);
     await View.startMessage(ctx);
   }
 
   // /list
   async list(ctx: Context) {
-    console.log(`пользователь @${ctx.from?.username} отправил команду /list`);
+    logger.info(`пользователь @${ctx.from?.username} отправил команду /list`);
     const messages = await this.model.getAllMessages();
     await View.sendList(ctx, messages);
   }
 
   // /clear
   async clear(ctx: Context) {
-    console.log(`пользователь @${ctx.from?.username} отправил команду /clear`);
+    logger.info(`пользователь @${ctx.from?.username} отправил команду /clear`);
     await this.model.deleteAllMessages();
     await View.sendClearMessage(ctx);
   }
@@ -34,7 +35,7 @@ class MessageController {
 
   // кнопка удалить
   async delete(ctx: Context) {
-    console.log(`пользователь @${ctx.from?.username} нажал на кнопку удалить`);
+    logger.info(`пользователь @${ctx.from?.username} нажал на кнопку удалить`);
     const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
     const msgID = parseInt(callbackQuery.data.split("_")[1], 10);
 
@@ -45,10 +46,10 @@ class MessageController {
 
   //кнопка изменить время
   async changeTimeButton(ctx: BotContext) {
-    console.log(`пользователь @${ctx.from?.username} нажал на кнопку изменить время`);
+    logger.info(`пользователь @${ctx.from?.username} нажал на кнопку изменить время`);
 
     if (!ctx.session) {
-      console.log("сессия не объявлена");
+      logger.warn("сессия не объявлена");
     }
 
     const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;

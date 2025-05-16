@@ -1,9 +1,10 @@
 import Database from "better-sqlite3";
+import logger from "../logs/logs";
 
 const db = new Database("src/database/messages.db");
 
 try {
-  console.log("инициализирована база данных")
+  logger.info("инициализирована база данных")
 
   db.prepare(
     `
@@ -18,7 +19,7 @@ try {
   ).run();
 
 } catch (error) {
-  console.error(`ошибка при инициализации базы данных: ${error}`)
+  logger.error(`ошибка при инициализации базы данных: ${error}`)
 }
 
 export default db;

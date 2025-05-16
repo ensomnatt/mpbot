@@ -1,12 +1,16 @@
-FROM node:slim
+FROM node:latest
 
-RUN apt-get update && apt-get install -y python3 python3-pip build-essential
+RUN apt-get update && apt-get install -y \
+  python3 \
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json ./
 
-RUN npm install
+RUN npm install --build-from-source=better-sqlite3
 
 COPY . .
 

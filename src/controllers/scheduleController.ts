@@ -3,6 +3,7 @@ import { Model, Message } from "../model/model";
 import { INTERVAL } from "../config/config";
 import DateUtils from "../utils/utils";
 import View from "../view/view";
+import logger from "../logs/logs";
 
 class ScheduleController {
   private model: Model;
@@ -29,14 +30,14 @@ class ScheduleController {
       sent: 1
     }
 
-    console.log(`пользователь @${ctx.from?.username} захотел добавить сообщение в очередь. id: ${msgID}, time: ${msgNow.time}`);
+    logger.info(`пользователь @${ctx.from?.username} захотел добавить сообщение в очередь. id: ${msgID}, time: ${msgNow.time}`);
 
     //если нет сообщений в базе
     if (!await this.model.checkIfMessagesExists()) {
-      console.log("в базе нет сообщений");
+      logger.info("в базе нет сообщений");
       //если сообщение вне расписания
       if (!await this.dateUtils.isDateInSchedule(msgNow.time)) {
-        console.log("сообщение вне расписания");
+        logger.debug("сообщение вне расписания");
         let msgClone = msgNow;
         msgClone.time = await this.dateUtils.setDateToScheduleStart(msgNow.time);
         msgClone.sent = 0;
@@ -45,14 +46,14 @@ class ScheduleController {
         await View.sendMessageTime(ctx, msgClone.time, msgClone.messageID);
         //если в расписании
       } else {
-        console.log("сообщение в расписании");
+        logger.debug("сообщение в расписании");
         await this.model.addMessageToDB(msgNow);
         await View.sendMessageToChannel(ctx, msgNow.messageID, chatID, msgNow.time);
         await View.sendMessageAboutPublicationNow(ctx);
       }
       //если есть сообщения
     } else {
-      console.log("есть сообщения");
+      console.debug("есть сообщения");
       const lastMsg = await this.model.getLastMessage(); //последнее сообщение
       const diff = await DateUtils.timeDifference(lastMsg.time, msgNow.time); //разница в минутах
       //между нынешним временем и временем последнего сообщения
@@ -69,7 +70,7 @@ class ScheduleController {
       //если время экземпляра сообщения для отложки выходит за рамки расписания, 
       //ставим время на начало расписания
       if (!await this.dateUtils.isDateInSchedule(msgLater.time)) {
-        console.log("сообщение выходит за рамки расписания, переносим на начало расписания");
+        console.debug("сообщение выходит за рамки расписания, переносим на начало расписания");
         msgLater.time = await this.dateUtils.setDateToScheduleStart(msgLater.time);
       }
 
@@ -80,7 +81,7 @@ class ScheduleController {
         await DateUtils.stringToDate(msgNow.time) > await DateUtils.stringToDate(lastMsg.time) &&
         await this.dateUtils.isDateInSchedule(msgNow.time)
       ) {
-        console.log("с момента отправки последнего сообщения прошло достаточно времени");
+        console.debug("с момента отправки последнего сообщения прошло достаточно времени");
         await this.model.addMessageToDB(msgNow);
         await View.sendMessageTime(ctx, msgNow.time, msgNow.messageID);
         await View.sendMessageToChannel(ctx, msgID, chatID, msgNow.time);
@@ -89,7 +90,7 @@ class ScheduleController {
       } else {
         await this.model.addMessageToDB(msgLater);
         await View.sendMessageTime(ctx, msgLater.time, msgLater.messageID);
-        console.log(`сообщение было отправленно в отложенные. id: ${msgLater.messageID}, time: ${msgLater.time}`);
+        console.info(`сообщение было отправленно в отложенные. id: ${msgLater.messageID}, time: ${msgLater.time}`);
       }
     }
   }
@@ -100,7 +101,7 @@ class ScheduleController {
       return;
     }
 
-    console.log("запущена цикличная проверка сообщений");
+    logger.info("запущена цикличная проверка сообщений");
     this.intervalID = setInterval(async () => {
       await this.checkMessages(ctx);
     }, 30000); //пол минуты
@@ -108,7 +109,7 @@ class ScheduleController {
 
   //метод для проверки и публикации запланированных сообщений
   async checkMessages(ctx: Context) {
-    console.log(`начата проверка на наличие готовых сообщений в ${await DateUtils.getCurrentDate()}`);
+    logger.info(`начата проверка на наличие готовых сообщений в ${await DateUtils.getCurrentDate()}`);
     const messages: Message[] = [];
 
     for (const msg of await this.model.getMessagesThatDidntSend()) {
@@ -125,7 +126,7 @@ class ScheduleController {
         await View.sendMessageToChannel(ctx, msg.messageID, msg.chatID, msg.time);
       }
     } else {
-      console.log("готовые к публикации сообщения не найдены");
+      logger.info("готовые к публикации сообщения не найдены");
       return;
     }
   }

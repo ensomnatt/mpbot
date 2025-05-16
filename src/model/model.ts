@@ -1,4 +1,5 @@
 import db from "../database/database";
+import logger from "../logs/logs";
 import DateUtils from "../utils/utils";
 
 //интерфейс сообщения
@@ -27,13 +28,13 @@ export class Model {
   //проверка на наличие сообщений в бд
   async checkIfMessagesExists(): Promise<boolean> {
     try {
-      console.log("проверка на наличие сообщений в бд");
+      logger.info("проверка на наличие сообщений в бд");
       const query = db.prepare("SELECT COUNT(*) AS count FROM messages");
       const result = await query.get() as CountResult;
 
       return result.count > 0;
     } catch (error) {
-      console.error(`ошибка при проверки на наличие записей в бд: ${error}`);
+      logger.info(`ошибка при проверки на наличие записей в бд: ${error}`);
       return false;
     }
   }
@@ -44,9 +45,9 @@ export class Model {
       const query = db.prepare("INSERT INTO messages (message_id, chat_id, time, sent) VALUES (?, ?, ?, ?)");
       query.run(msg.messageID, msg.chatID, msg.time, msg.sent);
 
-      console.log(`сообщение добавлено в базу данных. id: ${msg.messageID}, time: ${msg.time}, sent: ${msg.sent}`);
+      logger.info(`сообщение добавлено в базу данных. id: ${msg.messageID}, time: ${msg.time}, sent: ${msg.sent}`);
     } catch (error) {
-      console.error(`ошибка при добавлении сообщения в базу данных: ${error}`);
+      logger.error(`ошибка при добавлении сообщения в базу данных: ${error}`);
     }
   }
 
@@ -75,13 +76,13 @@ export class Model {
       }
     }
 
-    console.log("получена последняя запись в бд")
+    logger.info("получена последняя запись в бд")
     return lastMsg;
   }
 
   //получение неотправленных сообщений
   async getMessagesThatDidntSend(): Promise<Message[]> {
-    console.log("проверка на наличие неопубликованных сообщений в базе данных");
+    logger.info("проверка на наличие неопубликованных сообщений в базе данных");
     try {
       const query = db.prepare("SELECT * FROM messages WHERE sent = 0");
       const messagesRows = query.all() as Row[];
@@ -104,7 +105,7 @@ export class Model {
 
       return messages;
     } catch (error) {
-      console.error(`ошибка при получении неотправленных сообщений в базе данных: ${error}`);
+      logger.error(`ошибка при получении неотправленных сообщений в базе данных: ${error}`);
       return [];
     }
   }
@@ -114,7 +115,7 @@ export class Model {
     try {
       db.prepare("UPDATE messages SET sent = 1 WHERE message_id = ?").run(msgID);
     } catch (error) {
-      console.error(`ошибка при попытке изменить сообщение в базе данных: ${error}`);
+      logger.error(`ошибка при попытке изменить сообщение в базе данных: ${error}`);
     }
   }
 
@@ -135,10 +136,10 @@ export class Model {
         messages.push(msg);
       }
 
-      console.log("получены сообщения из бд");
+      logger.info("получены сообщения из бд");
       return await this.sortMessages(messages);
     } catch (error) {
-      console.error(`ошибка при получении всех сообщений из бд: ${error}`);
+      logger.error(`ошибка при получении всех сообщений из бд: ${error}`);
       return [];
     }
   }
@@ -146,19 +147,19 @@ export class Model {
   //удаление всех сообщений
   async deleteAllMessages() {
     db.prepare("DELETE FROM messages").run();
-    console.log("удалены все сообщения из бд");
+    logger.info("удалены все сообщения из бд");
   }
 
   //удаление сообщения
   async deleteMessage(msgID: number) {
     db.prepare("DELETE FROM messages WHERE message_id = ?").run(msgID);
-    console.log("удалено сообщение из бд");
+    logger.info("удалено сообщение из бд");
   }
 
   //смена времени сообщения
   async changeMessageTime(msgID: number, time: string) {
     db.prepare("UPDATE messages SET time = ? WHERE message_id = ?").run(time, msgID);
-    console.log(`время публикации сообщения ${msgID} было изменено на ${time}`);
+    logger.info(`время публикации сообщения ${msgID} было изменено на ${time}`);
   }
 
   async sortMessages(messages: Message[]): Promise<Message[]> {

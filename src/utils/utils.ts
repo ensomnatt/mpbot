@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { TIME_ZONE, SCHEDULE_START, SCHEDULE_END } from "../config/config";
+import logger from "../logs/logs";
 
 const FORMAT = "yyyy-MM-dd HH:mm";  
 
@@ -46,15 +47,24 @@ class DateUtils {
     return date.isValid && date > await this.stringToDate(await this.getCurrentDate());
   }
 
-  static async maxDate(datesStr: string[]): Promise<string> {
-    const dates = [];
-    for (const dateStr of datesStr) {
-      const date = await this.stringToDate(dateStr);
-      dates.push(date);
-    }
-    const maxDate = DateTime.max(...dates);
+  static async maxDate(datesStr: string[]): Promise<string | null> {
+    try {
+      const dates = [];
+      for (const dateStr of datesStr) {
+        const date = await this.stringToDate(dateStr);
+        dates.push(date);
+      }
+      const maxDate = DateTime.max(...dates);
 
-    return this.dateToString(maxDate);
+      if (!maxDate) {
+        throw new Error("maxDate is null");
+      }
+
+      return this.dateToString(maxDate);
+    } catch (error) {
+      logger.error(`не удалось получить максимальную дату: ${error}`);
+      return null;
+    }
   }
 
   //строки в минуты

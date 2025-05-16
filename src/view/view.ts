@@ -2,6 +2,7 @@ import { Context, Markup } from "telegraf";
 import { START_MESSAGE, CHANNEL_ID } from "../config/config";
 import { Message } from "../model/model";
 import { inlineKeyboard } from "telegraf/typings/markup";
+import logger from "../logs/logs";
 
 const pageSize = 20;
 
@@ -91,9 +92,9 @@ class View {
   ) {
     try {
       await ctx.telegram.forwardMessage(CHANNEL_ID, chatID, messageID);
-      console.log(`сообщение отправлено в канал. id: ${messageID}, time: ${time}`);
+      logger.info(`сообщение отправлено в канал. id: ${messageID}, time: ${time}`);
     } catch (error) {
-      console.error(`ошибка при пересылке сообщения в канал: ${error}`);
+      logger.error(`ошибка при пересылке сообщения в канал: ${error}`);
     }
   }
 

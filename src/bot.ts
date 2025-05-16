@@ -2,6 +2,7 @@ import { session, Telegraf } from "telegraf";
 import { BOT_TOKEN } from "./config/config";
 import composer from "./controllers/botCommands";
 import { BotContext } from "./context/context";
+import logger from "./logs/logs";
 
 const bot = new Telegraf<BotContext>(BOT_TOKEN);
 bot.use(session());
@@ -19,4 +20,4 @@ bot.use(async (ctx, next) => {
 bot.use(composer);
 
 bot.launch();
-console.log("бот запущен");
+logger.info("бот запущен");
