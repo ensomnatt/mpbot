@@ -1,8 +1,8 @@
 import { Context, Markup } from "telegraf";
 import { START_MESSAGE, CHANNEL_ID } from "../config/config";
 import { Message } from "../model/model";
-import { inlineKeyboard } from "telegraf/typings/markup";
 import logger from "../logs/logs";
+import botMessages from "../config/botMessages";
 
 const pageSize = 20;
 
@@ -22,20 +22,8 @@ class View {
     );
   }  
 
-  //руководство по использованию бота
-  static async helpMessage(ctx: Context) {
-    await ctx.sendMessage(
-      "как пользоваться ботом:\n" +
-      "вы пересылаете посты боту. все, он сам выставляет время и публикует сообщения\n\n" +
-      "инструменты:\n" +
-      "/list - выводит все запланированные посты, при нажатии на кнопку, номер которой " +
-      "соответствует номеру сообщения бот присылает ответ на нужный вам пост\n" +
-      "/clear - удаляет все запланированные посты, будьте осторожны\n" +
-      "/help - вывести это сообщение\n" +
-      "/start - приветственное сообщение, вызывайте на случай, если пропала клавиатура с кнопками\n" +
-      "кнопка удалить - удаляет нужный пост из очереди\n" +
-      "кнопка изменить время - переносит нужный пост на заданную дату."
-    )
+  static async sendMessage(ctx: Context, message: string) {
+    await ctx.sendMessage(message);
   }
 
   //отправка сообщения с просьбой ввести время 
@@ -46,28 +34,18 @@ class View {
       ]
     );
 
-    await ctx.sendMessage("введите новое время публикации в формате yyyy-MM-dd HH:mm\n\nк примеру: 2025-03-30 15:30", keyboard);
+    await ctx.sendMessage(botMessages.timeFormatError1, keyboard);
   }
 
   //отправка сообщения с оповещением о том, что заданное время не подходит под формат
   static async sendChangeTimeErrorMessage(ctx: Context) {
-    await ctx.sendMessage("заданное время не подходит под формат! попробуйте еще раз");
+    await ctx.sendMessage(botMessages.timeFormatError2);
     await this.timeMessage(ctx);
-  }
-
-  //отправка сообщения с оповещением о том, что очередь была очищена
-  static async sendClearMessage(ctx: Context) {
-    await ctx.sendMessage("сообщения были очищены");
-  }
-
-  //отправка сообщения с уведомлением о том, что пост был отправлен прямо сейчас
-  static async sendMessageAboutPublicationNow(ctx: Context) {
-    await ctx.reply("сообщение было отправлено сейчас, потому что в очереди нет других сообщений");
   }
 
   //отправка сообщения с уведомлением о том, что время публикации было изменено
   static async sendMessageAboutPublicationTime(ctx: Context, msgID: number) {
-    await ctx.reply("время публикации было изменено", {
+    await ctx.reply(botMessages.publicationTime, {
       reply_parameters: {
         message_id: msgID
       }
@@ -76,7 +54,7 @@ class View {
 
   //отправка сообщения с уведомлением о том, что сообщение удалено
   static async sendDeleteMessage(ctx: Context, msgID: number) {
-    await ctx.reply("сообщение было удалено", {
+    await ctx.reply(botMessages.delete, {
       reply_parameters: {
         message_id: msgID
       }
@@ -176,7 +154,7 @@ class View {
   //отправка списка
   static async sendList(ctx: Context, messages: Message[]) {
     if (messages.length === 0) {
-      await ctx.sendMessage("в очереди нет сообщений");
+      await ctx.sendMessage(botMessages.noMessages);
     } else {
       const { text, keyboard } = await View.getPage(messages, 0); 
       await ctx.sendMessage(text, keyboard);

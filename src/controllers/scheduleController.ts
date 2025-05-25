@@ -4,6 +4,7 @@ import { INTERVAL } from "../config/config";
 import DateUtils from "../utils/utils";
 import View from "../view/view";
 import logger from "../logs/logs";
+import botMessages from "../config/botMessages";
 
 class ScheduleController {
   private model: Model;
@@ -49,7 +50,7 @@ class ScheduleController {
         logger.debug("сообщение в расписании");
         await this.model.addMessageToDB(msgNow);
         await View.sendMessageToChannel(ctx, msgNow.messageID, chatID, msgNow.time);
-        await View.sendMessageAboutPublicationNow(ctx);
+        await View.sendMessage(ctx, botMessages.publicationTime);
       }
       //если есть сообщения
     } else {

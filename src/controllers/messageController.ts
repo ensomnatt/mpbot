@@ -5,6 +5,7 @@ import { CallbackQuery } from "telegraf/typings/core/types/typegram";
 import { BotContext } from "../context/context";
 import DateUtils from "../utils/utils";
 import logger from "../logs/logs";
+import botMessages from "../config/botMessages";
 
 class MessageController {  
   private model = new Model();
@@ -25,12 +26,12 @@ class MessageController {
   async clear(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} отправил команду /clear`);
     await this.model.deleteAllMessages();
-    await View.sendClearMessage(ctx);
+    await View.sendMessage(ctx, botMessages.clear);
   }
 
   // /help
   async help(ctx: Context) {
-    await View.helpMessage(ctx);
+    await View.sendMessage(ctx, botMessages.help);
   }
 
   // кнопка удалить

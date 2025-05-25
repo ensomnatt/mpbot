@@ -4,6 +4,7 @@ import fs from "fs";
 const env = process.env.NODE_ENV || "dev";
 const logLevel = process.env.LOG_LEVEL || "info";
 
+// создание файла для логов
 if (!fs.existsSync("logs")) {
   fs.mkdirSync("logs");
 }

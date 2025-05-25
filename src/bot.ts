@@ -6,6 +6,7 @@ import logger from "./logs/logs";
 
 const bot = new Telegraf<BotContext>(BOT_TOKEN);
 bot.use(session());
+
 //установка значений сессии по умолчанию
 bot.use(async (ctx, next) => {
   if (!ctx.session) {
