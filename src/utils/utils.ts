@@ -5,10 +5,10 @@ import logger from "../logs/logs";
 const FORMAT = "yyyy-MM-dd HH:mm";  
 
 class DateUtils {
-  private isScheduleExists: boolean;
-  private isScheduleStartLowerThanEnd: boolean = true;
-  private scheduleStart: number = 0;
-  private scheduleEnd: number = 0;
+  private isScheduleExists: boolean; // есть ли расписание
+  private isScheduleStartLowerThanEnd: boolean = true; // начало расписания < конца (7:00-20:00)
+  private scheduleStart: number = 0; // начало расписания
+  private scheduleEnd: number = 0; // конец расписания
 
   constructor() {
     if (SCHEDULE_START === "" || SCHEDULE_END === "") {
@@ -27,6 +27,7 @@ class DateUtils {
     this.isScheduleStartLowerThanEnd = this.scheduleStart < this.scheduleEnd;
   }
 
+  // метод проверки даты на соответствие 
   async isDateInSchedule(date: string): Promise<boolean> {
     if (!this.isScheduleExists) {
       return true;
