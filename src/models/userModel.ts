@@ -24,7 +24,7 @@ interface CountResult {
   count: number;
 }
 
-export class Model {
+export class UserModel {
   //проверка на наличие сообщений в бд
   async checkIfMessagesExists(): Promise<boolean> {
     try {

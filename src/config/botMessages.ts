@@ -19,6 +19,8 @@ const botMessages = {
   
   publicationNow: "сообщение было отправлено сейчас, потому что в очереди нет других сообщений",
   publicationTime: "время публикации было изменено",
+
+  channel: "бот был успешно добавлен в канал",
 }
 
 export default botMessages;

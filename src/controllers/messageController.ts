@@ -1,6 +1,6 @@
 import { Context } from "telegraf";
 import View from "../view/view";
-import { Model } from "../model/model";
+import { UserModel } from "../models/userModel";
 import { CallbackQuery } from "telegraf/typings/core/types/typegram";
 import { BotContext } from "../context/context";
 import DateUtils from "../utils/utils";
@@ -8,7 +8,7 @@ import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
 
 class MessageController {  
-  private model = new Model();
+  private userModel = new UserModel();
   // /start
   async start(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} запустил бота`);
@@ -18,14 +18,14 @@ class MessageController {
   // /list
   async list(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} отправил команду /list`);
-    const messages = await this.model.getAllMessages();
+    const messages = await this.userModel.getAllMessages();
     await View.sendList(ctx, messages);
   }
 
   // /clear
   async clear(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} отправил команду /clear`);
-    await this.model.deleteAllMessages();
+    await this.userModel.deleteAllMessages();
     await View.sendMessage(ctx, botMessages.clear);
   }
 
@@ -40,7 +40,7 @@ class MessageController {
     const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
     const msgID = parseInt(callbackQuery.data.split("_")[1], 10);
 
-    this.model.deleteMessage(msgID);
+    this.userModel.deleteMessage(msgID);
     await ctx.answerCbQuery();
     await View.sendDeleteMessage(ctx, msgID);
   }
@@ -80,7 +80,7 @@ class MessageController {
     if (!await DateUtils.isDateValid(time)) {
       await View.sendChangeTimeErrorMessage(ctx);
     } else {
-      await this.model.changeMessageTime(ctx.session.changeTimeMsgID, time);
+      await this.userModel.changeMessageTime(ctx.session.changeTimeMsgID, time);
       ctx.session.awaitingTime = false;
       await View.sendMessageAboutPublicationTime(ctx, ctx.session.changeTimeMsgID)
     }
@@ -92,7 +92,7 @@ class MessageController {
     const data = callbackQuery.data;
     const page = parseInt(data.split("_")[1], 10);
 
-    const messages = await this.model.getAllMessages();
+    const messages = await this.userModel.getAllMessages();
     const { text, keyboard } = await View.getPage(messages, page);
     await ctx.editMessageText(text, keyboard);
     await ctx.answerCbQuery();

@@ -1,6 +1,6 @@
 import { Context, Markup } from "telegraf";
 import { START_MESSAGE, CHANNEL_ID } from "../config/config";
-import { Message } from "../model/model";
+import { Message } from "../models/userModel";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
 
