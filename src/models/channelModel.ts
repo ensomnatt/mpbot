@@ -1,7 +1,7 @@
 import db from "../database/database"
 import logger from "../logs/logs";
 
-interface Channel {
+export interface Channel {
   channelID: number;
   scheduleStart: string;
   scheduleEnd: string;

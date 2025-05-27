@@ -6,10 +6,18 @@ import { BotContext } from "../context/context";
 import DateUtils from "../utils/dateUtils";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
+import { Channel } from "node:diagnostics_channel";
 import { ChannelModel } from "../models/channelModel";
 
 class MessageController {  
-  private userModel = new UserModel();
+  private userModel: UserModel;
+  private channelModel: ChannelModel;
+  private dateUtils: DateUtils;
+
+  constructor() {
+    this.userModel = new UserModel();
+    this.channelModel = new ChannelModel();
+  }
 
   // /start
   async start(ctx: Context) {

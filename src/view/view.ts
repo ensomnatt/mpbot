@@ -1,5 +1,4 @@
 import { Context, Markup } from "telegraf";
-import { START_MESSAGE, CHANNEL_ID } from "../config/config";
 import { Message } from "../models/userModel";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
@@ -15,7 +14,7 @@ class View {
   //отправка стартового сообщения
   static async startMessage(ctx: Context) {
     await ctx.sendMessage(
-      START_MESSAGE,
+      botMessages.start,
       Markup.keyboard([
         ["/list", "/clear", "/help"]
       ]).resize()
@@ -66,10 +65,11 @@ class View {
     ctx: Context, 
     messageID: number, 
     chatID: number, 
+    channelID: number,
     time: string
   ) {
     try {
-      await ctx.telegram.forwardMessage(CHANNEL_ID, chatID, messageID);
+      await ctx.telegram.forwardMessage(channelID, chatID, messageID);
       logger.info(`сообщение отправлено в канал. id: ${messageID}, time: ${time}`);
     } catch (error) {
       logger.error(`ошибка при пересылке сообщения в канал: ${error}`);
