@@ -1,6 +1,6 @@
 import db from "../database/database";
 import logger from "../logs/logs";
-import DateUtils from "../utils/utils";
+import DateUtils from "../utils/dateUtils";
 
 //интерфейс сообщения
 export interface Message {
@@ -40,7 +40,7 @@ export class UserModel {
   }
 
   //добавление сообщения в бд
-  async addMessageToDB(msg: Message) {
+  addMessageToDB(msg: Message) {
     try {
       const query = db.prepare("INSERT INTO messages (message_id, chat_id, time, sent) VALUES (?, ?, ?, ?)");
       query.run(msg.messageID, msg.chatID, msg.time, msg.sent);
@@ -81,7 +81,7 @@ export class UserModel {
   }
 
   //получение неотправленных сообщений
-  async getMessagesThatDidntSend(): Promise<Message[]> {
+  getMessagesThatDidntSend(): Message[] {
     logger.info("проверка на наличие неопубликованных сообщений в базе данных");
     try {
       const query = db.prepare("SELECT * FROM messages WHERE sent = 0");
@@ -111,7 +111,7 @@ export class UserModel {
   }
 
   //смена sent на 1
-  async changeMessageStatus(msgID: number) {
+  changeMessageStatus(msgID: number) {
     try {
       db.prepare("UPDATE messages SET sent = 1 WHERE message_id = ?").run(msgID);
     } catch (error) {
@@ -120,7 +120,7 @@ export class UserModel {
   }
 
   //получение всех сообщений
-  async getAllMessages(): Promise<Message[]> {
+  getAllMessages(): Message[] {
     try {
       const messagesRows = db.prepare("SELECT * FROM messages;").all() as Row[];
       const messages: Message[] = [];
@@ -137,7 +137,7 @@ export class UserModel {
       }
 
       logger.info("получены сообщения из бд");
-      return await this.sortMessages(messages);
+      return this.sortMessages(messages);
     } catch (error) {
       logger.error(`ошибка при получении всех сообщений из бд: ${error}`);
       return [];
@@ -145,24 +145,24 @@ export class UserModel {
   }
 
   //удаление всех сообщений
-  async deleteAllMessages() {
+  deleteAllMessages() {
     db.prepare("DELETE FROM messages").run();
     logger.info("удалены все сообщения из бд");
   }
 
   //удаление сообщения
-  async deleteMessage(msgID: number) {
+  deleteMessage(msgID: number) {
     db.prepare("DELETE FROM messages WHERE message_id = ?").run(msgID);
     logger.info("удалено сообщение из бд");
   }
 
   //смена времени сообщения
-  async changeMessageTime(msgID: number, time: string) {
+  changeMessageTime(msgID: number, time: string) {
     db.prepare("UPDATE messages SET time = ? WHERE message_id = ?").run(time, msgID);
     logger.info(`время публикации сообщения ${msgID} было изменено на ${time}`);
   }
 
-  async sortMessages(messages: Message[]): Promise<Message[]> {
+  sortMessages(messages: Message[]): Message[] {
     return messages.sort((a, b) => DateUtils.stringToUnix(a.time) - DateUtils.stringToUnix(b.time));
   }
 }

@@ -18,7 +18,7 @@ interface ChannelData {
 }
 
 export class ChannelModel {
-  async channel(id: number) {
+  channel(id: number) {
     try {
       db.prepare("UPDATE channel SET channel_id = ?").run(id);
       logger.info(`изменен айди канала на ${id}`);
@@ -27,7 +27,7 @@ export class ChannelModel {
     }
   }
 
-  async scheduleStart(start: string) {
+  scheduleStart(start: string) {
     try {
       db.prepare("UPDATE chat SET schedule_start = ?").run(start);
       logger.info(`изменено начало расписания на ${start}`);
@@ -36,7 +36,7 @@ export class ChannelModel {
     }
   }
 
-  async scheduleEnd(end: string) {
+  scheduleEnd(end: string) {
     try {
       db.prepare("UPDATE chat SET schedule_end = ?").run(end);
       logger.info(`изменен конец расписания на ${end}`);
@@ -45,7 +45,7 @@ export class ChannelModel {
     }
   }
 
-  async interval(interval: string) {
+  interval(interval: string) {
     try {
       db.prepare("UPDATE chat SET interval = ?").run(interval);
       logger.info(`изменен интервал на ${interval}`);
@@ -54,7 +54,7 @@ export class ChannelModel {
     }
   }
 
-  async timeZone(timeZone: string) {
+  timeZone(timeZone: string) {
     try {
       db.prepare("UPDATE chat SET time_zone = ?").run(timeZone);
       logger.info(`изменен часовой пояс на ${timeZone}`);

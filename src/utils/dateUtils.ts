@@ -27,6 +27,13 @@ class DateUtils {
     this.isScheduleStartLowerThanEnd = this.scheduleStart < this.scheduleEnd;
   }
 
+
+  // метод проверки существования часового пояса
+  static isValidTimeZone(timeZone: string): boolean {
+    const dt = DateTime.now().setZone(timeZone);
+    return dt.isValid && dt.zoneName === timeZone;
+  }
+
   // метод проверки даты на соответствие 
   async isDateInSchedule(date: string): Promise<boolean> {
     if (!this.isScheduleExists) {

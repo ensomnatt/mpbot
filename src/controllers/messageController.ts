@@ -3,12 +3,14 @@ import View from "../view/view";
 import { UserModel } from "../models/userModel";
 import { CallbackQuery } from "telegraf/typings/core/types/typegram";
 import { BotContext } from "../context/context";
-import DateUtils from "../utils/utils";
+import DateUtils from "../utils/dateUtils";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
+import { ChannelModel } from "../models/channelModel";
 
 class MessageController {  
   private userModel = new UserModel();
+
   // /start
   async start(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} запустил бота`);
@@ -18,14 +20,14 @@ class MessageController {
   // /list
   async list(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} отправил команду /list`);
-    const messages = await this.userModel.getAllMessages();
+    const messages = this.userModel.getAllMessages();
     await View.sendList(ctx, messages);
   }
 
   // /clear
   async clear(ctx: Context) {
     logger.info(`пользователь @${ctx.from?.username} отправил команду /clear`);
-    await this.userModel.deleteAllMessages();
+    this.userModel.deleteAllMessages();
     await View.sendMessage(ctx, botMessages.clear);
   }
 
@@ -80,7 +82,7 @@ class MessageController {
     if (!await DateUtils.isDateValid(time)) {
       await View.sendChangeTimeErrorMessage(ctx);
     } else {
-      await this.userModel.changeMessageTime(ctx.session.changeTimeMsgID, time);
+      this.userModel.changeMessageTime(ctx.session.changeTimeMsgID, time);
       ctx.session.awaitingTime = false;
       await View.sendMessageAboutPublicationTime(ctx, ctx.session.changeTimeMsgID)
     }
@@ -92,7 +94,7 @@ class MessageController {
     const data = callbackQuery.data;
     const page = parseInt(data.split("_")[1], 10);
 
-    const messages = await this.userModel.getAllMessages();
+    const messages = this.userModel.getAllMessages();
     const { text, keyboard } = await View.getPage(messages, page);
     await ctx.editMessageText(text, keyboard);
     await ctx.answerCbQuery();

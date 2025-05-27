@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
 import { UserModel, Message } from "../models/userModel";
 import { INTERVAL } from "../config/config";
-import DateUtils from "../utils/utils";
+import DateUtils from "../utils/dateUtils";
 import View from "../view/view";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
