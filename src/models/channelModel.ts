@@ -63,9 +63,9 @@ export class ChannelModel {
     }
   }
 
-  async chatInfo(): Promise<Channel | null> {
+  chatInfo(): Channel | null {
     try {
-      const channelRaw = await db.prepare("SELECT * FROM channel").get() as ChannelData;
+      const channelRaw = db.prepare("SELECT * FROM channel").get() as ChannelData;
 
       const channel: Channel = {
         channelID: channelRaw.channel_id,

@@ -1,42 +1,41 @@
 import { DateTime } from "luxon";
-import { Channel } from "../models/channelModel";
+import { Channel, ChannelModel } from "../models/channelModel";
 import logger from "../logs/logs";
 
 const FORMAT = "yyyy-MM-dd HH:mm";  
 
 class DateUtils {
-  private isScheduleExists: boolean; // есть ли расписание
+  private isScheduleExists: boolean = false; // есть ли расписание
   private isScheduleStartLowerThanEnd: boolean = true; // начало расписания < конца (7:00-20:00)
   private scheduleStart: number = 0; // начало расписания
   private scheduleEnd: number = 0; // конец расписания
-  private timeZone: string;
-  private scheduleStartString: string;
-  private scheduleEndString: string;
+  private channelModel!: ChannelModel;
+  private channelInfo!: Channel | null;
 
-  constructor(channelInfo: Channel) {
-    this.timeZone = channelInfo.timeZone;
-    this.scheduleStartString = channelInfo.scheduleStart;
-    this.scheduleEndString = channelInfo.scheduleEnd;
+  constructor() {
+    try {
+      // настройки канала
+      this.channelModel = new ChannelModel();
+      this.channelInfo = this.channelModel.chatInfo();
+      if (!this.channelInfo) throw new Error("channelInfo is null");
 
-    if (this.scheduleStartString === "" || this.scheduleEndString === "") {
-      this.isScheduleExists = false;
-    } else {
-      this.isScheduleExists = true;
+      // существует ли расписание
+      if (this.channelInfo.scheduleStart !== "" && this.channelInfo.scheduleEnd !== "") {
+        this.isScheduleExists = true;
+      }
+
+      // начало расписания и конец в секундах
+      this.scheduleStart = this.stringToMinutes(this.channelInfo.scheduleStart);
+      this.scheduleEnd = this.stringToMinutes(this.channelInfo.scheduleEnd);
+
+      this.isScheduleStartLowerThanEnd = this.scheduleStart < this.scheduleEnd;
+    } catch (error) {
+      logger.error(`ошибка при инициализации DateUtils: ${error}`);
     }
-
-    this.initSchedule();
   }
-
-  async initSchedule() {
-    this.scheduleStart = this.stringToMinutes(this.scheduleStartString);
-    this.scheduleEnd = this.stringToMinutes(this.scheduleEndString);
-
-    this.isScheduleStartLowerThanEnd = this.scheduleStart < this.scheduleEnd;
-  }
-
 
   // метод проверки существования часового пояса
-  static isValidTimeZone(timeZone: string): boolean {
+  isValidTimeZone(timeZone: string): boolean {
     const dt = DateTime.now().setZone(timeZone);
     return dt.isValid && dt.zoneName === timeZone;
   }
@@ -59,7 +58,10 @@ class DateUtils {
 
   isDateValid(dateStr: string): boolean {
     const date = DateTime.fromFormat(dateStr, FORMAT);
-    return date.isValid && date > this.stringToDate(this.getCurrentDate());
+    const currentDate = this.stringToDate(this.getCurrentDate());
+    if (!currentDate) return false;
+
+    return date.isValid && date > currentDate;
   }
 
   maxDate(datesStr: string[]): string | null {
@@ -67,6 +69,7 @@ class DateUtils {
       const dates = [];
       for (const dateStr of datesStr) {
         const date = this.stringToDate(dateStr);
+        if (!date) return null;
         dates.push(date);
       }
       const maxDate = DateTime.max(...dates);
@@ -90,8 +93,14 @@ class DateUtils {
 
   //строки в юникс тайм
   stringToUnix(str: string): number {
-    const date = DateTime.fromFormat(str, FORMAT, { zone: this.timeZone });
-    return date.toSeconds();
+    try {
+      if (!this.channelInfo) throw new Error("channelInfo is null");
+      const date = DateTime.fromFormat(str, FORMAT, { zone: this.channelInfo.timeZone });
+      return date.toSeconds();
+    } catch (error) {
+      logger.error(`ошибка при выполнении DateUtils.stringToUnix: ${error}`);
+      return 0;
+    }
   }
 
   //юникс тайм в строки
@@ -107,7 +116,13 @@ class DateUtils {
 
   //нынешняя дата
   getCurrentDate(): string {
-    return DateTime.now().setZone(this.timeZone).toFormat(FORMAT);
+    try {
+      if (!this.channelInfo) throw new Error("channelInfo is null");
+      return DateTime.now().setZone(this.channelInfo.timeZone).toFormat(FORMAT);
+    } catch (error) {
+      logger.error(`ошибка при выполнении DateUtils.getCurrentDate: ${error}`);
+      return "";
+    }
   }
 
   //форматирование даты в строку
@@ -116,21 +131,29 @@ class DateUtils {
   }
 
   //форматирование строки в дату
-  stringToDate(str: string): DateTime {
-    return DateTime.fromFormat(str, FORMAT, { zone: this.timeZone });
+  stringToDate(str: string): DateTime | null {
+    try {
+      if (!this.channelInfo) throw new Error("channelInfo is null");
+      return DateTime.fromFormat(str, FORMAT, { zone: this.channelInfo.timeZone });
+    } catch (error) {
+      logger.error(`ошибка во время выполнения DateUtils.stringToDate: ${error}`);
+      return null;
+    }
   }
 
   //нахождение разницы между двумя датами в формате строк
   timeDifference(start: string, end: string): number {
     const startTime = this.stringToDate(start);
     const endTime = this.stringToDate(end);
+    if (!endTime || !startTime) return 0;
     return endTime.diff(startTime, "minutes").minutes;
   }
 
   //метод для установки времени на начало расписания
   setDateToScheduleStart(dateStr: string): string {
     let date = this.stringToDate(dateStr);
-    
+    if (!date) return "";
+
     const dateNow = this.extractHoursAndMinutes(dateStr);
     const dateNowMinutes = this.stringToMinutes(dateNow);
 

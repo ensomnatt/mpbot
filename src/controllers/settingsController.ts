@@ -7,16 +7,18 @@ import ParseUtils from "../utils/parseUtils";
 import DateUtils from "../utils/dateUtils";
 
 class SettingsController {
-  private ChannelModel: ChannelModel;
+  private channelModel: ChannelModel;
+  private dateUtils: DateUtils;
 
   constructor() {
-    this.ChannelModel = new ChannelModel();
+    this.channelModel = new ChannelModel();
+    this.dateUtils = new DateUtils();
   }
 
   // метод запоминания чата
   async rememberChat(ctx: Context) {
     const chatID = ctx.chat?.id || 0;
-    this.ChannelModel.channel(chatID);
+    this.channelModel.channel(chatID);
     
     logger.info(`бот был добавлен в канал ${chatID}`);
 
@@ -37,11 +39,11 @@ class SettingsController {
 
     switch (startOrEnd) {
     case "начало":
-      this.ChannelModel.scheduleStart(time);
+      this.channelModel.scheduleStart(time);
       logger.info(`пользователь ${ctx.from?.username} изменил начало расписания на ${time}`);
       break;
     case "конец":
-      this.ChannelModel.scheduleEnd(time);
+      this.channelModel.scheduleEnd(time);
       logger.info(`пользователь ${ctx.from?.username} изменил конец расписания на ${time}`);
       break;
     }
@@ -63,7 +65,7 @@ class SettingsController {
 
     logger.info(`пользователь ${ctx.from?.username} изменил интервал на ${interval}`);
 
-    this.ChannelModel.interval(interval);
+    this.channelModel.interval(interval);
     await View.sendMessage(ctx, botMessages.settings);
   }
 
@@ -72,14 +74,14 @@ class SettingsController {
     if (ctx.message && "text" in ctx.message) text = ctx.message.text;
 
     const timeZone = text.split(" ")[3];
-    if (!ParseUtils.checkTimeZone(timeZone) && !DateUtils.isValidTimeZone(timeZone)) {
+    if (!ParseUtils.checkTimeZone(timeZone) && !this.dateUtils.isValidTimeZone(timeZone)) {
       await View.sendMessage(ctx, botMessages.timeZoneError);
       return;
     }
 
     logger.info(`пользователь ${ctx.from?.username} изменил часовой пояс на ${timeZone}`);
 
-    this.ChannelModel.timeZone(timeZone);
+    this.channelModel.timeZone(timeZone);
     await View.sendMessage(ctx, botMessages.settings);
   }
 }

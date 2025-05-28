@@ -37,12 +37,6 @@ jobs:
             if [ ! -f .env ]; then
               echo "creating .env file..."
               echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" >> .env
-              echo "CHANNEL_ID=-1002695794179" >> .env
-              echo "SCHEDULE_START=20:00" >> .env
-              echo "SCHEDULE_END=7:00" >> .env
-              echo "INTERVAL=5" >> .env
-              echo "TIME_ZONE="Europe/Moscow"" >> .env
-              echo "START_MESSAGE="привет, я твой вп бот"" >> .env
             fi
 
             docker compose down

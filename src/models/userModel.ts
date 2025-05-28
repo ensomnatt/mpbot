@@ -25,6 +25,8 @@ interface CountResult {
 }
 
 export class UserModel {
+  private dateUtils: DateUtils = new DateUtils();
+
   //проверка на наличие сообщений в бд
   async checkIfMessagesExists(): Promise<boolean> {
     try {
@@ -52,15 +54,15 @@ export class UserModel {
   }
 
   //получение последней записи в бд
-  async getLastMessage(): Promise<Message> {
-    const messages = await this.getAllMessages();
+  getLastMessage(): Message {
+    const messages = this.getAllMessages();
     const times = [];
 
     for (const msg of messages) {
       times.push(msg.time);
     }
 
-    const maxTime = await DateUtils.maxDate(times);
+    const maxTime = this.dateUtils.maxDate(times);
     let lastMsg: Message = {
       messageID: 0,
       chatID: 0,
@@ -163,6 +165,6 @@ export class UserModel {
   }
 
   sortMessages(messages: Message[]): Message[] {
-    return messages.sort((a, b) => DateUtils.stringToUnix(a.time) - DateUtils.stringToUnix(b.time));
+    return messages.sort((a, b) => this.dateUtils.stringToUnix(a.time) - this.dateUtils.stringToUnix(b.time));
   }
 }

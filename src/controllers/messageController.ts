@@ -6,17 +6,14 @@ import { BotContext } from "../context/context";
 import DateUtils from "../utils/dateUtils";
 import logger from "../logs/logs";
 import botMessages from "../config/botMessages";
-import { Channel } from "node:diagnostics_channel";
-import { ChannelModel } from "../models/channelModel";
 
 class MessageController {  
   private userModel: UserModel;
-  private channelModel: ChannelModel;
   private dateUtils: DateUtils;
 
   constructor() {
     this.userModel = new UserModel();
-    this.channelModel = new ChannelModel();
+    this.dateUtils = new DateUtils();
   }
 
   // /start
@@ -87,7 +84,7 @@ class MessageController {
     if (ctx.message && "text" in ctx.message) time = ctx.message!.text;
     
     //проверка на валидность даты
-    if (!await DateUtils.isDateValid(time)) {
+    if (!this.dateUtils.isDateValid(time)) {
       await View.sendChangeTimeErrorMessage(ctx);
     } else {
       this.userModel.changeMessageTime(ctx.session.changeTimeMsgID, time);
